@@ -34,19 +34,16 @@ public class Datastore {
   private DatastoreService datastore;
 
   /** 
-   *  Checks if a user was already stored, done when a user logs in
+   *  Checks if a user was already stored, done when a user logs in.
    * 
-   *  @return 0 on success, -1 when user was not found
+   *  @return true if a user in Datastore, false otherwise.
    */
-  private int userFound(int hash){
+  private boolean userFound(String user) {
     Query query =
         new Query("User")
-            .setFilter(new Query.FilterPredicate("hashcode", FilterOperator.EQUAL, hash));
+            .setFilter(new Query.FilterPredicate("User", FilterOperator.EQUAL, user));
     PreparedQuery results = datastore.prepare(query);
-    if (results.asSingleEntity() == null) {
-      return -1;
-    }
-    return 0;
+    return results.asSingleEntity() == null ? false : true;
   }
 
   public Datastore() {
@@ -63,24 +60,30 @@ public class Datastore {
     datastore.put(messageEntity);
   }
 
-  /** Stores the User in Datastore */
+  /** Stores the user in Datastore (if not already in it) */
   public void storeUser(String user) {
     Entity userEntity = new Entity("User", user);
-    // Faster to compare ints than strings, use hash to check if user in Datastore
-    userEntity.setProperty("hashcode", user.hashCode());
-    if (userFound(user.hashCode()) != 0) {
+    if (!userFound(user)) {
       datastore.put(userEntity);
     }
   }
 
-  /** Returns the total number of messages for all users. */
+  /** 
+   * Gets total number of messages in system.
+   * 
+   * @return number of messages, with a cap of 5000 if length is bigger.
+   */
   public int getTotalMessageCount(){
     Query query = new Query("Message");
     PreparedQuery results = datastore.prepare(query);
-    return results.countEntities(FetchOptions.Builder.withLimit(1000));
+    return results.countEntities(FetchOptions.Builder.withLimit(5000));
   }
 
-  /** Returns the total number of users that have logged in */
+  /**
+   * Gets total number of users in system.
+   * 
+   * @return number of users in system, with a cap of 1000 if length is bigger.
+   */
   public int getTotalUserCount(){
     Query query = new Query("User");
     PreparedQuery results = datastore.prepare(query);
