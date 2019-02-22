@@ -19,6 +19,7 @@ package com.google.codeu.data;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.FilterOperator;
@@ -32,6 +33,19 @@ public class Datastore {
 
   private DatastoreService datastore;
 
+  /** 
+   *  Checks if a user was already stored, done when a user logs in.
+   * 
+   *  @return true if a user in Datastore, false otherwise.
+   */
+  private boolean userFound(String user) {
+    Query query =
+        new Query("User")
+            .setFilter(new Query.FilterPredicate("User", FilterOperator.EQUAL, user));
+    PreparedQuery results = datastore.prepare(query);
+    return results.asSingleEntity() == null ? false : true;
+  }
+
   public Datastore() {
     datastore = DatastoreServiceFactory.getDatastoreService();
   }
@@ -44,6 +58,36 @@ public class Datastore {
     messageEntity.setProperty("timestamp", message.getTimestamp());
 
     datastore.put(messageEntity);
+  }
+
+  /** Stores the user in Datastore (if not already in it) */
+  public void storeUser(String user) {
+    Entity userEntity = new Entity("User", user);
+    if (!userFound(user)) {
+      datastore.put(userEntity);
+    }
+  }
+
+  /** 
+   * Gets total number of messages in system.
+   * 
+   * @return number of messages, with a cap of 5000 if length is bigger.
+   */
+  public int getTotalMessageCount(){
+    Query query = new Query("Message");
+    PreparedQuery results = datastore.prepare(query);
+    return results.countEntities(FetchOptions.Builder.withLimit(5000));
+  }
+
+  /**
+   * Gets total number of users in system.
+   * 
+   * @return number of users in system, with a cap of 1000 if length is bigger.
+   */
+  public int getTotalUserCount(){
+    Query query = new Query("User");
+    PreparedQuery results = datastore.prepare(query);
+    return results.countEntities(FetchOptions.Builder.withLimit(1000));
   }
 
   /**
