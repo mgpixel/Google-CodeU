@@ -53,9 +53,11 @@ public class Datastore {
   /** Stores the Message in Datastore. */
   public void storeMessage(Message message) {
     Entity messageEntity = new Entity("Message", message.getId().toString());
+    // sets the fields and their values in our datastore
     messageEntity.setProperty("user", message.getUser());
     messageEntity.setProperty("text", message.getText());
     messageEntity.setProperty("timestamp", message.getTimestamp());
+    messageEntity.setProperty("recipient", message.getRecipient());
 
     datastore.put(messageEntity);
   }
@@ -107,12 +109,14 @@ public class Datastore {
 
     for (Entity entity : results.asIterable()) {
       try {
+    	// get the fields for each message
         String idString = entity.getKey().getName();
         UUID id = UUID.fromString(idString);
         String text = (String) entity.getProperty("text");
         long timestamp = (long) entity.getProperty("timestamp");
+        String recipient = (String) entity.getProperty("recipient");
 
-        Message message = new Message(id, user, text, timestamp);
+        Message message = new Message(id, user, text, timestamp, recipient);
         messages.add(message);
       } catch (Exception e) {
         System.err.println("Error reading message.");

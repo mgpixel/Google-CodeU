@@ -75,12 +75,16 @@ public class MessageServlet extends HttpServlet {
       return;
     }
 
+    // gets the current logged in user's email
     String user = userService.getCurrentUser().getEmail();
+    // gets the text of the message
     String text = Jsoup.clean(request.getParameter("text"), Whitelist.none());
+    // gets the recipient of the message
+    String recipient = request.getParameter("recipient");
 
-    Message message = new Message(user, text);
+    Message message = new Message(user, text, recipient);
     datastore.storeMessage(message);
 
-    response.sendRedirect("/user-page.html?user=" + user);
+    response.sendRedirect("/user-page.html?user=" + recipient);
   }
 }
