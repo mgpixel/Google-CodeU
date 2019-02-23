@@ -1,3 +1,7 @@
+/**
+ * Gets all of the data from the /stats url and shows it in a more readable
+ * format.
+ */
 function fetchStats() {
   const url = '/stats';
   fetch(url).then((response) => {
@@ -5,6 +9,7 @@ function fetchStats() {
   }).then((stats) => {
     const statsContainer = document.getElementById('stats-container');
     statsContainer.innerHTML = '';
+    // Build each element and append to stats-container to show data
     const messageCountElement = buildStatElement('Message count: ' + stats.messageCount);
     const userCountElement = buildStatElement('User count: ' + stats.userCount);
     statsContainer.appendChild(messageCountElement);
@@ -12,12 +17,17 @@ function fetchStats() {
   })
 }
 
+/**
+ * Builds the string passed in into an HTML element to display
+ * @param {string} statString 
+ */
 function buildStatElement(statString) {
   const statElement = document.createElement('p');
   statElement.appendChild(document.createTextNode(statString));
   return statElement;
 }
 
+/** Fetches data and populates UI of page */
 function buildUI() {
   fetchStats()
 }
