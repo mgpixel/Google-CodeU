@@ -53,9 +53,11 @@ public class Datastore {
   /** Stores the Message in Datastore. */
   public void storeMessage(Message message) {
     Entity messageEntity = new Entity("Message", message.getId().toString());
+    // sets the fields and their values in our datastore
     messageEntity.setProperty("user", message.getUser());
     messageEntity.setProperty("text", message.getText());
     messageEntity.setProperty("timestamp", message.getTimestamp());
+    messageEntity.setProperty("recipient", message.getRecipient());
 
     datastore.put(messageEntity);
   }
@@ -91,28 +93,67 @@ public class Datastore {
   }
 
   /**
-   * Gets messages posted by a specific user.
-   *
-   * @return a list of messages posted by the user, or empty list if user has never posted a
-   *     message. List is sorted by time descending.
+   * Gets the message sent by the user.
+   * 
+   * @return a lit of message send by the sender, or empty list if the sender hasn't 
+   * 	sent a message. List is sorted by time descending.
    */
-  public List<Message> getMessages(String user) {
+  public List<Message> getMessagesBySender(String sender) {
+	  List<Message> messages = new ArrayList<>();
+	  
+	  Query query =
+		  new Query("Message")
+	          .setFilter(new Query.FilterPredicate("user", FilterOperator.EQUAL, sender))
+	          .addSort("timestamp", SortDirection.DESCENDING);
+	  PreparedQuery results = datastore.prepare(query);
+
+	  for (Entity entity : results.asIterable()) {
+		  try {
+			  // get the fields for each message
+			  // (id, user who received, time stamp, text of message)
+			  String idString = entity.getKey().getName();
+	          UUID id = UUID.fromString(idString);
+	          String recipient = (String) entity.getProperty("recipient"); 
+	          String text = (String) entity.getProperty("text");
+	          long timestamp = (long) entity.getProperty("timestamp");
+
+	          Message message = new Message(id, sender, text, timestamp, recipient);
+	          messages.add(message);
+	       } catch (Exception e) {
+	         System.err.println("Error reading message.");
+	         System.err.println(entity.toString());
+	         e.printStackTrace();
+	       }
+	   }
+	   return messages;
+  }
+  
+  /**
+   * Gets messages received by the user. 
+   *
+   * @return a list of messages received by the recipient, or empty list if the recipient
+   * 	hasn't received message. List is sorted by time descending. 
+   */
+  public List<Message> getMessagesForRecipient(String recipient) {
     List<Message> messages = new ArrayList<>();
 
     Query query =
         new Query("Message")
-            .setFilter(new Query.FilterPredicate("user", FilterOperator.EQUAL, user))
+            .setFilter(new Query.FilterPredicate("recipient", FilterOperator.EQUAL, recipient))
             .addSort("timestamp", SortDirection.DESCENDING);
     PreparedQuery results = datastore.prepare(query);
 
     for (Entity entity : results.asIterable()) {
       try {
+    	// get the fields for each message
+    	// (id, user who sent message, time stamp, text of message)
         String idString = entity.getKey().getName();
         UUID id = UUID.fromString(idString);
+        String sender = (String) entity.getProperty("user"); 
         String text = (String) entity.getProperty("text");
         long timestamp = (long) entity.getProperty("timestamp");
 
-        Message message = new Message(id, user, text, timestamp);
+        Message message = new Message(id, sender, text, timestamp, recipient);
         messages.add(message);
       } catch (Exception e) {
         System.err.println("Error reading message.");
