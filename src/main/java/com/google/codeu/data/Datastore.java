@@ -37,6 +37,19 @@ public class Datastore {
     datastore = DatastoreServiceFactory.getDatastoreService();
   }
 
+  /** 
+   *  Checks if a user was already stored, done when a user logs in.
+   * 
+   *  @return true if a user in Datastore, false otherwise.
+   */
+  private boolean userFound(String username) {
+    Query query =
+        new Query("User")
+            .setFilter(new Query.FilterPredicate("User", FilterOperator.EQUAL, username));
+    PreparedQuery results = datastore.prepare(query);
+    return results.asSingleEntity() != null;
+  }
+
   /** Stores the Message in Datastore. */
   public void storeMessage(Message message) {
     Entity messageEntity = new Entity("Message", message.getId().toString());
@@ -53,46 +66,77 @@ public class Datastore {
    * Either stores the user in datastore, or updates the messagesSent
    * property when a message is being stored.
    */
-  public void storeUser(String user, long messagesSent) {
-    Entity userEntity = new Entity("User", user);
+  public void storeUser(String username, long messagesSent) {
+    Entity userEntity = new Entity("User", username);
     userEntity.setProperty("messagesSent", messagesSent);
-    datastore.put(userEntity);
+    // Storing a user when they first log in.
+    if (messagesSent == 0) {
+      if (!userFound(username)) {
+        datastore.put(userEntity);
+      }
+    // Updating a user's messagesSent property here.
+    } else {
+      datastore.put(userEntity);
+    }
+  }
+
+  /**
+   * Gets average message length,
+   * 
+   * @return average length of messages sent.
+   */
+  public int getAverageMessageLength() {
+    Query query = new Query("Message");
+    PreparedQuery results = datastore.prepare(query);
+    int numMessages = getTotalMessageCount();
+    double averageLength = 0;
+    for (Entity messageEntity: results.asIterable()) {
+      String text = (String) messageEntity.getProperty("text");
+      averageLength += (double) text.length() / numMessages;
+    }
+    return (int) averageLength;
   }
 
   /**
    * Gets most active user based on number of messages sent.
    * 
-   * @return most active user, first user if no messages sent in system.
+   * @return most active user, first user if no messages sent in system/ties.
    */
   public String getMostActiveUser() {
     Query query = new Query("User").addSort("messagesSent", SortDirection.DESCENDING);
     PreparedQuery results = datastore.prepare(query);
     Entity userEntity = results.asSingleEntity();
+    if (userEntity == null) {
+      return "No users in the system";
+    }
     return userEntity.getKey().getName();
   }
 
   /**
    * Gets number of messages a user has sent.
    * 
-   * @return number of messages sent by user, with a cap of 5000. Can be 0.
+   * @return number of messages sent by user, with a cap of 10000. Can be 0.
    */
   public int getNumMessagesUserSent(String sender) {
     Query query =
       new Query("Message")
             .setFilter(new Query.FilterPredicate("user", FilterOperator.EQUAL, sender));
     PreparedQuery results = datastore.prepare(query);
-    return results.countEntities(FetchOptions.Builder.withLimit(5000));
+    return results.countEntities(FetchOptions.Builder.withLimit(10000));
   }
 
   /** 
-   * Gets total number of messages in system.
+   * Gets total number of messages in system. Note: since countEntities() is
+   * deprecated, setting an arbitrary limit to every getter using it. May
+   * cause an issue with getAverageMessageLength if there are more messages
+   * than the limit specified, keep in mind.
    * 
-   * @return number of messages, with a cap of 5000 if length is bigger.
+   * @return number of messages, with a cap of 10000 if length is bigger.
    */
   public int getTotalMessageCount(){
     Query query = new Query("Message");
     PreparedQuery results = datastore.prepare(query);
-    return results.countEntities(FetchOptions.Builder.withLimit(5000));
+    return results.countEntities(FetchOptions.Builder.withLimit(10000));
   }
 
   /**
@@ -103,7 +147,7 @@ public class Datastore {
   public int getTotalUserCount(){
     Query query = new Query("User");
     PreparedQuery results = datastore.prepare(query);
-    return results.countEntities(FetchOptions.Builder.withLimit(1000));
+    return results.countEntities(FetchOptions.Builder.withLimit(10000));
   }
 
   /**
