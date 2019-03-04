@@ -81,7 +81,7 @@ public class Datastore {
   }
 
   /**
-   * Gets average message length,
+   * Gets average message length.
    * 
    * @return average length of messages sent.
    */
