@@ -32,6 +32,7 @@ import java.util.UUID;
 public class Datastore {
 
   private DatastoreService datastore;
+  private final int fetchLimit = 10000;
 
   public Datastore() {
     datastore = DatastoreServiceFactory.getDatastoreService();
@@ -88,7 +89,8 @@ public class Datastore {
   public int getAverageMessageLength() {
     Query query = new Query("Message");
     PreparedQuery results = datastore.prepare(query);
-    int numMessages = getTotalMessageCount();
+    int numMessages = results.countEntities(FetchOptions.Builder.withLimit(fetchLimit));
+    // Use double for calculations and cast to int when returning.
     double averageLength = 0;
     for (Entity messageEntity: results.asIterable()) {
       String text = (String) messageEntity.getProperty("text");
@@ -100,7 +102,8 @@ public class Datastore {
   /**
    * Gets most active user based on number of messages sent.
    * 
-   * @return most active user, first user if no messages sent in system/ties.
+   * @return most active user, first user if no messages sent in system/ties or
+   *  a message saying there are no users.
    */
   public String getMostActiveUser() {
     Query query = new Query("User").addSort("messagesSent", SortDirection.DESCENDING);
@@ -122,7 +125,7 @@ public class Datastore {
       new Query("Message")
             .setFilter(new Query.FilterPredicate("user", FilterOperator.EQUAL, sender));
     PreparedQuery results = datastore.prepare(query);
-    return results.countEntities(FetchOptions.Builder.withLimit(10000));
+    return results.countEntities(FetchOptions.Builder.withLimit(fetchLimit));
   }
 
   /** 
@@ -136,18 +139,19 @@ public class Datastore {
   public int getTotalMessageCount(){
     Query query = new Query("Message");
     PreparedQuery results = datastore.prepare(query);
-    return results.countEntities(FetchOptions.Builder.withLimit(10000));
+    return results.countEntities(FetchOptions.Builder.withLimit(fetchLimit));
   }
 
   /**
    * Gets total number of users in system.
    * 
    * @return number of users in system, with a cap of 1000 if length is bigger.
+   *  Can be 0 if there no one has logged in.
    */
   public int getTotalUserCount(){
     Query query = new Query("User");
     PreparedQuery results = datastore.prepare(query);
-    return results.countEntities(FetchOptions.Builder.withLimit(10000));
+    return results.countEntities(FetchOptions.Builder.withLimit(fetchLimit));
   }
 
   /**
