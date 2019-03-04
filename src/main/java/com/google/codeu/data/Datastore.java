@@ -33,19 +33,6 @@ public class Datastore {
 
   private DatastoreService datastore;
 
-  /** 
-   *  Checks if a user was already stored, done when a user logs in.
-   * 
-   *  @return true if a user in Datastore, false otherwise.
-   */
-  private boolean userFound(String user) {
-    Query query =
-        new Query("User")
-            .setFilter(new Query.FilterPredicate("User", FilterOperator.EQUAL, user));
-    PreparedQuery results = datastore.prepare(query);
-    return results.asSingleEntity() == null ? false : true;
-  }
-
   public Datastore() {
     datastore = DatastoreServiceFactory.getDatastoreService();
   }
@@ -62,12 +49,39 @@ public class Datastore {
     datastore.put(messageEntity);
   }
 
-  /** Stores the user in Datastore (if not already in it) */
-  public void storeUser(String user) {
+  /**
+   * Either stores the user in datastore, or updates the messagesSent
+   * property when a message is being stored.
+   */
+  public void storeUser(String user, long messagesSent) {
     Entity userEntity = new Entity("User", user);
-    if (!userFound(user)) {
-      datastore.put(userEntity);
-    }
+    userEntity.setProperty("messagesSent", messagesSent);
+    datastore.put(userEntity);
+  }
+
+  /**
+   * Gets most active user based on number of messages sent.
+   * 
+   * @return most active user, first user if no messages sent in system.
+   */
+  public String getMostActiveUser() {
+    Query query = new Query("User").addSort("messagesSent", SortDirection.DESCENDING);
+    PreparedQuery results = datastore.prepare(query);
+    Entity userEntity = results.asSingleEntity();
+    return userEntity.getKey().getName();
+  }
+
+  /**
+   * Gets number of messages a user has sent.
+   * 
+   * @return number of messages sent by user, with a cap of 5000. Can be 0.
+   */
+  public int getNumMessagesUserSent(String sender) {
+    Query query =
+      new Query("Message")
+            .setFilter(new Query.FilterPredicate("user", FilterOperator.EQUAL, sender));
+    PreparedQuery results = datastore.prepare(query);
+    return results.countEntities(FetchOptions.Builder.withLimit(5000));
   }
 
   /** 

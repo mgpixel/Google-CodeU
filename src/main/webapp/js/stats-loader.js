@@ -12,8 +12,10 @@ function fetchStats() {
     // Build each element and append to stats-container to show data
     const messageCountElement = buildStatElement('Message count: ' + stats.messageCount);
     const userCountElement = buildStatElement('User count: ' + stats.userCount);
+    const activeUserElement = buildStatElement('Most active user: ' + stats.mostActiveUser);
     statsContainer.appendChild(messageCountElement);
     statsContainer.appendChild(userCountElement);
+    statsContainer.appendChild(activeUserElement);
   })
 }
 
