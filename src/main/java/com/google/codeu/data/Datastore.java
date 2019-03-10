@@ -92,6 +92,9 @@ public class Datastore {
     int numMessages = results.countEntities(FetchOptions.Builder.withLimit(fetchLimit));
     // Use double for calculations and cast to int when returning.
     double averageLength = 0;
+    if (numMessages == 0) {
+      return 0;
+    }
     for (Entity messageEntity: results.asIterable()) {
       String text = (String) messageEntity.getProperty("text");
       averageLength += (double) text.length() / numMessages;
