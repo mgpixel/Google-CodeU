@@ -45,9 +45,11 @@ function drawBestHikesChart(){
     },
     legend: {
       position: 'none'
+    },
+    annotations: {
+      alwaysOutside: true
     }
   };
 
-  // draw the chart
   bestHikesChart.draw(viewHikes, bestHikesOptions);
 }
