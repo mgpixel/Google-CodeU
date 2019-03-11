@@ -32,11 +32,15 @@ public class StatsPageServlet extends HttpServlet {
     
     response.setContentType("application/json");
     int messageCount = datastore.getTotalMessageCount();
+    int averageMessageLength = datastore.getAverageMessageLength();
     int userCount = datastore.getTotalUserCount();
+    String mostActiveUser = datastore.getMostActiveUser();
 
     JsonObject jsonObject = new JsonObject();
     jsonObject.addProperty("messageCount", messageCount);
+    jsonObject.addProperty("averageMessageLength", averageMessageLength);
     jsonObject.addProperty("userCount", userCount);
+    jsonObject.addProperty("mostActiveUser", mostActiveUser);
     response.getOutputStream().println(jsonObject.toString());
   }
 }

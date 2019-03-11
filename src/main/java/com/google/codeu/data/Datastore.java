@@ -32,22 +32,23 @@ import java.util.UUID;
 public class Datastore {
 
   private DatastoreService datastore;
+  private final int fetchLimit = 10000;
+
+  public Datastore() {
+    datastore = DatastoreServiceFactory.getDatastoreService();
+  }
 
   /** 
    *  Checks if a user was already stored, done when a user logs in.
    * 
    *  @return true if a user in Datastore, false otherwise.
    */
-  private boolean userFound(String user) {
+  private boolean userFound(String username) {
     Query query =
         new Query("User")
-            .setFilter(new Query.FilterPredicate("User", FilterOperator.EQUAL, user));
+            .setFilter(new Query.FilterPredicate("User", FilterOperator.EQUAL, username));
     PreparedQuery results = datastore.prepare(query);
-    return results.asSingleEntity() == null ? false : true;
-  }
-
-  public Datastore() {
-    datastore = DatastoreServiceFactory.getDatastoreService();
+    return results.asSingleEntity() != null;
   }
 
   /** Stores the Message in Datastore. */
@@ -62,34 +63,98 @@ public class Datastore {
     datastore.put(messageEntity);
   }
 
-  /** Stores the user in Datastore (if not already in it) */
-  public void storeUser(String user) {
-    Entity userEntity = new Entity("User", user);
-    if (!userFound(user)) {
+  /**
+   * Either stores the user in datastore, or updates the messagesSent
+   * property when a message is being stored.
+   */
+  public void storeUser(String username, long messagesSent) {
+    Entity userEntity = new Entity("User", username);
+    userEntity.setProperty("messagesSent", messagesSent);
+    // Storing a user when they first log in.
+    if (messagesSent == 0) {
+      if (!userFound(username)) {
+        datastore.put(userEntity);
+      }
+    // Updating a user's messagesSent property here.
+    } else {
       datastore.put(userEntity);
     }
   }
 
-  /** 
-   * Gets total number of messages in system.
+  /**
+   * Gets average message length.
    * 
-   * @return number of messages, with a cap of 5000 if length is bigger.
+   * @return average length of messages sent.
+   */
+  public int getAverageMessageLength() {
+    Query query = new Query("Message");
+    PreparedQuery results = datastore.prepare(query);
+    int numMessages = results.countEntities(FetchOptions.Builder.withLimit(fetchLimit));
+    // Use double for calculations and cast to int when returning.
+    double averageLength = 0;
+    if (numMessages == 0) {
+      return 0;
+    }
+    for (Entity messageEntity: results.asIterable()) {
+      String text = (String) messageEntity.getProperty("text");
+      averageLength += (double) text.length() / numMessages;
+    }
+    return (int) averageLength;
+  }
+
+  /**
+   * Gets most active user based on number of messages sent.
+   * 
+   * @return most active user, first user if no messages sent in system/ties or
+   *  a message saying there are no users.
+   */
+  public String getMostActiveUser() {
+    Query query = new Query("User").addSort("messagesSent", SortDirection.DESCENDING);
+    PreparedQuery results = datastore.prepare(query);
+    Entity userEntity = results.asSingleEntity();
+    if (userEntity == null) {
+      return "No users in the system";
+    }
+    return userEntity.getKey().getName();
+  }
+
+  /**
+   * Gets number of messages a user has sent.
+   * 
+   * @return number of messages sent by user, with a cap of 10000. Can be 0.
+   */
+  public int getNumMessagesUserSent(String sender) {
+    Query query =
+      new Query("Message")
+            .setFilter(new Query.FilterPredicate("user", FilterOperator.EQUAL, sender));
+    PreparedQuery results = datastore.prepare(query);
+    return results.countEntities(FetchOptions.Builder.withLimit(fetchLimit));
+  }
+
+  /** 
+   * Gets total number of messages in system. Note: since countEntities() is
+   * deprecated, setting an arbitrary limit to every getter using it. May
+   * cause an issue with getAverageMessageLength if there are more messages
+   * than the limit specified, keep in mind.
+   * 
+   * @return number of messages, with a cap of 10000 if length is bigger.
    */
   public int getTotalMessageCount(){
     Query query = new Query("Message");
     PreparedQuery results = datastore.prepare(query);
-    return results.countEntities(FetchOptions.Builder.withLimit(5000));
+    return results.countEntities(FetchOptions.Builder.withLimit(fetchLimit));
   }
 
   /**
    * Gets total number of users in system.
    * 
    * @return number of users in system, with a cap of 1000 if length is bigger.
+   *  Can be 0 if there no one has logged in.
    */
   public int getTotalUserCount(){
     Query query = new Query("User");
     PreparedQuery results = datastore.prepare(query);
-    return results.countEntities(FetchOptions.Builder.withLimit(1000));
+    return results.countEntities(FetchOptions.Builder.withLimit(fetchLimit));
   }
 
   /**
