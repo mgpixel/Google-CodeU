@@ -43,12 +43,12 @@ public class Datastore {
    * 
    *  @return true if a user in Datastore, false otherwise.
    */
-  private boolean userFound(String username) {
+  private Entity userFound(String username) {
     Query query =
         new Query("User")
             .setFilter(new Query.FilterPredicate("User", FilterOperator.EQUAL, username));
     PreparedQuery results = datastore.prepare(query);
-    return results.asSingleEntity() != null;
+    return results.asSingleEntity();
   }
 
   /** Stores the Message in Datastore. */
@@ -67,18 +67,15 @@ public class Datastore {
    * Either stores the user in datastore, or updates the messagesSent
    * property when a message is being stored.
    */
-  public void storeUser(String username, long messagesSent) {
+  public void storeUser(String username, long updateMessagesSent) {
     Entity userEntity = new Entity("User", username);
-    userEntity.setProperty("messagesSent", messagesSent);
-    // Storing a user when they first log in.
-    if (messagesSent == 0) {
-      if (!userFound(username)) {
-        datastore.put(userEntity);
-      }
-    // Updating a user's messagesSent property here.
-    } else {
-      datastore.put(userEntity);
+    Entity storedUserEntity = userFound(username);
+    // Doesn't override previous count by getting previous count first.
+    if (storedUserEntity != null) {
+      updateMessagesSent += (long) storedUserEntity.getProperty("messagesSent");
     }
+    userEntity.setProperty("messagesSent", updateMessagesSent);
+    datastore.put(userEntity);
   }
 
   /**
@@ -111,24 +108,11 @@ public class Datastore {
   public String getMostActiveUser() {
     Query query = new Query("User").addSort("messagesSent", SortDirection.DESCENDING);
     PreparedQuery results = datastore.prepare(query);
-    Entity userEntity = results.asSingleEntity();
+    Entity userEntity = results.asIterator().next();
     if (userEntity == null) {
       return "No users in the system";
     }
     return userEntity.getKey().getName();
-  }
-
-  /**
-   * Gets number of messages a user has sent.
-   * 
-   * @return number of messages sent by user, with a cap of 10000. Can be 0.
-   */
-  public int getNumMessagesUserSent(String sender) {
-    Query query =
-      new Query("Message")
-            .setFilter(new Query.FilterPredicate("user", FilterOperator.EQUAL, sender));
-    PreparedQuery results = datastore.prepare(query);
-    return results.countEntities(FetchOptions.Builder.withLimit(fetchLimit));
   }
 
   /** 
