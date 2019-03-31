@@ -17,10 +17,15 @@
 package com.google.codeu.data;
 
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.commons.validator.routines.UrlValidator;
 
 /** A single message posted by a user. */
 public class Message {
 
+  private final String regex = "(https?://\\S+\\.(png|jpg))";
+  private final String replacement = "<img src=\"$1\" />";
   private UUID id;
   private String user;
   private String text;
@@ -62,5 +67,31 @@ public class Message {
   
   public String getRecipient() {
     return recipient;
+  }
+
+  /**
+   * Changes message text when the user is looking at messages.
+   * Does not modified stored message in case future functionality
+   * allows user to edit messages.
+   */
+  public void parseImageURLs() {
+    // Initial setup with url validation and regex matching.
+    String[] schemes = {"http, https"};
+    StringBuffer sb = new StringBuffer();
+    UrlValidator urlValidator = new UrlValidator(schemes);
+    String match;
+    Pattern p = Pattern.compile(regex);
+    Matcher m = p.matcher(this.text);
+    // Continously changes the text if valid url(s) was/were passed in.
+    while (m.find()) {
+      match = m.group();
+      System.out.println(match);
+      if (urlValidator.isValid(match)) {
+        match = match.replaceAll(regex, replacement);
+      }
+      m.appendReplacement(sb, replacement);
+    }
+    m.appendTail(sb);
+    this.text = sb.toString();
   }
 }
