@@ -203,6 +203,7 @@ public class Datastore {
         long timestamp = (long) entity.getProperty("timestamp");
 
         Message message = new Message(id, sender, text, timestamp, recipient);
+        message.parseImageURLs();
         messages.add(message);
       } catch (Exception e) {
         System.err.println("Error reading message.");
