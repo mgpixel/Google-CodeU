@@ -41,9 +41,9 @@ public class Datastore {
   /** 
    *  Checks if a user was already stored, done when a user logs in.
    * 
-   *  @return true if a user in Datastore, false otherwise.
+   *  @return a user entity if found, null otherwise.
    */
-  private Entity userFound(String username) {
+  private Entity findUser(String username) {
     Query query =
         new Query("User")
             .setFilter(new Query.FilterPredicate("User", FilterOperator.EQUAL, username));
@@ -67,9 +67,9 @@ public class Datastore {
    * Either stores the user in datastore, or updates the messagesSent
    * property when a message is being stored.
    */
-  public void storeUser(String username, long updateMessagesSent) {
+  public void storeUser(String username, int updateMessagesSent) {
     Entity userEntity = new Entity("User", username);
-    Entity storedUserEntity = userFound(username);
+    Entity storedUserEntity = findUser(username);
     // Doesn't override previous count by getting previous count first.
     if (storedUserEntity != null) {
       updateMessagesSent += (long) storedUserEntity.getProperty("messagesSent");
