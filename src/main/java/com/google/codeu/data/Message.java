@@ -31,6 +31,7 @@ public class Message {
   private String text;
   private long timestamp;
   private String recipient;
+  private String imageUrl;
 
   /**
    * Constructs a new {@link Message} posted by {@code user} with {@code text} content 
@@ -47,10 +48,15 @@ public class Message {
     this.text = text;
     this.timestamp = timestamp;
     this.recipient = recipient;
+    this.imageUrl = null;
   }
 
   public UUID getId() {
     return id;
+  }
+
+  public String getImageUrl() {
+    return imageUrl;
   }
 
   public String getUser() {
@@ -69,6 +75,10 @@ public class Message {
     return recipient;
   }
 
+  public void setImageUrl(String imageUrl) {
+    this.imageUrl = imageUrl;
+  }
+
   /**
    * Changes message text when the user is looking at messages.
    * Does not modified stored message in case future functionality
@@ -85,7 +95,6 @@ public class Message {
     // Continously changes the text if valid url(s) was/were passed in.
     while (m.find()) {
       match = m.group();
-      System.out.println(match);
       if (urlValidator.isValid(match)) {
         match = match.replaceAll(regex, replacement);
       }

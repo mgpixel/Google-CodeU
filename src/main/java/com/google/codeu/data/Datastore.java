@@ -59,7 +59,7 @@ public class Datastore {
     messageEntity.setProperty("text", message.getText());
     messageEntity.setProperty("timestamp", message.getTimestamp());
     messageEntity.setProperty("recipient", message.getRecipient());
-
+    messageEntity.setProperty("imageUrl", message.getImageUrl());
     datastore.put(messageEntity);
   }
 
@@ -182,7 +182,9 @@ public class Datastore {
 	          String text = (String) entity.getProperty("text");
 	          long timestamp = (long) entity.getProperty("timestamp");
 
-	          Message message = new Message(id, sender, text, timestamp, recipient);
+            Message message = new Message(id, sender, text, timestamp, recipient);
+            // if there's no url, it'll still be set to null
+            message.setImageUrl((String) entity.getProperty("imageUrl"));
 	          messages.add(message);
 	       } catch (Exception e) {
 	         System.err.println("Error reading message.");
@@ -220,6 +222,7 @@ public class Datastore {
 
         Message message = new Message(id, sender, text, timestamp, recipient);
         message.parseImageURLs();
+        message.setImageUrl((String) entity.getProperty("imageUrl"));
         messages.add(message);
       } catch (Exception e) {
         System.err.println("Error reading message.");

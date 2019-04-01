@@ -77,6 +77,14 @@ limitations under the License.
         <artifactId>appengine-maven-plugin</artifactId>
         <version>1.9.59</version>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.0</version>
+        <configuration>
+          <arg>--add-modules javax.activation</arg>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>
