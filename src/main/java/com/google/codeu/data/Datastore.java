@@ -140,11 +140,24 @@ public class Datastore {
     PreparedQuery results = datastore.prepare(query);
     return results.countEntities(FetchOptions.Builder.withLimit(fetchLimit));
   }
+  
+  /**
+   * Gets all the messages that exist in the datastore,
+   * regardless of sender or recipient.
+   *  
+   * @return a list of messages that exists in the datastore/app, or empty list if
+   * there are no messages in the datastore/app. List is sorted by time descending.
+   */
+  public List<Message> getAllMessages() {
+	  // call the getMessagesForRecipient method,
+	  // but setting the recipient to null
+	  return getMessagesForRecipient(null);
+  }
 
   /**
    * Gets the message sent by the user.
    * 
-   * @return a lit of message send by the sender, or empty list if the sender hasn't 
+   * @return a list of message send by the sender, or empty list if the sender hasn't 
    * 	sent a message. List is sorted by time descending.
    */
   public List<Message> getMessagesBySender(String sender) {
@@ -185,11 +198,19 @@ public class Datastore {
    */
   public List<Message> getMessagesForRecipient(String recipient) {
     List<Message> messages = new ArrayList<>();
+    
+    Query query;
+    if (recipient != null) {
+    	// recipient was specified
+        query = new Query("Message")
+                    .setFilter(new Query.FilterPredicate("recipient", FilterOperator.EQUAL, recipient))
+                    .addSort("timestamp", SortDirection.DESCENDING);
+    } else {
+    	// recipient was not specified, return all messages in datastore
+    	query = new Query("Message")
+    				.addSort("timestamp", SortDirection.DESCENDING);
+    }
 
-    Query query =
-        new Query("Message")
-            .setFilter(new Query.FilterPredicate("recipient", FilterOperator.EQUAL, recipient))
-            .addSort("timestamp", SortDirection.DESCENDING);
     PreparedQuery results = datastore.prepare(query);
 
     for (Entity entity : results.asIterable()) {

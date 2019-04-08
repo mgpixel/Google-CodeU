@@ -19,3 +19,20 @@ indexes:
   - name: recipient
   - name: timestamp
     direction: desc
+
+ - kind: Trail
+   properties:
+   - name: id
+   - name: name
+   - name: city
+   - name: start
+   - name: end
+     direction: desc
+ 
+ - kind: Hike
+   properties:
+   - name: id
+   - name: organizer
+   - name: time
+   - name: date
+     direction: desc
