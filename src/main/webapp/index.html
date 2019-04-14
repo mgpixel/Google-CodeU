@@ -18,22 +18,39 @@ limitations under the License.
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>CodeU 2019 Starter Project</title>
+    <title>The Hiking Project</title>
     <link rel="stylesheet" href="/css/main.css">
+    <link href="https://fonts.googleapis.com/css?family=Barlow" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <script src="/js/navigation-loader.js"></script>
   </head>
   <body onload="addLoginOrLogoutLinkToNavigation();">
     <nav>
-      <ul id="navigation">
-        <li><a href="/">Home</a></li>
-      </ul>
+      <div class="nav-wrapper light-blue lighten-3">
+        <ul id="navigation" class="right hide-on-med-and-down">
+          <li><a href="/">Home</a></li>
+        </ul>
+      </div>
     </nav>
-    <h1>CodeU Starter Project</h1>
-    <p>This is the CodeU starter project. Click the links above to login and visit your page.
-    You can post messages on your page, and you can visit other user pages if you have
-    their URL.</p>
-    <h2>About</h2>
-    <p>Our team is made up of students from the US and Mexico at 4 different universities with
-    a variety of interests.</p>
+
+    <div id="home-title">
+      <h1>The Hiking Project</h1>
+    </div>
+
+    <div class="welcome-content">
+      <div id="welcome-quote">
+        <p> "In every walk with nature, one receives far more than he seeks." - John Muir </p>
+      </div>
+
+      <div id="welcome-description">
+        <p>Hiking is a wonderful way to connect with nature, destress, maintain a healthy lifestyle,
+        and spend time with family and friends. This activity is possible in almost every location you
+        visit. With just a little searching, you can embark on your next hike of choice!</p>
+      </div>
+
+      <button class="center-align" onclick="window.location.href = '/search';">Explore Trails</button>
+    </div>
+
+
   </body>
 </html>
