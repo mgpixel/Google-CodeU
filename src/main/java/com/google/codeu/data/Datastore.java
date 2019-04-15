@@ -41,14 +41,14 @@ public class Datastore {
   /** 
    *  Checks if a user was already stored, done when a user logs in.
    * 
-   *  @return true if a user in Datastore, false otherwise.
+   *  @return a user entity if found, null otherwise.
    */
-  private boolean userFound(String username) {
+  private Entity findUser(String username) {
     Query query =
         new Query("User")
             .setFilter(new Query.FilterPredicate("User", FilterOperator.EQUAL, username));
     PreparedQuery results = datastore.prepare(query);
-    return results.asSingleEntity() != null;
+    return results.asSingleEntity();
   }
 
   /** Stores the Message in Datastore. */
@@ -67,18 +67,15 @@ public class Datastore {
    * Either stores the user in datastore, or updates the messagesSent
    * property when a message is being stored.
    */
-  public void storeUser(String username, long messagesSent) {
+  public void storeUser(String username, int updateMessagesSent) {
     Entity userEntity = new Entity("User", username);
-    userEntity.setProperty("messagesSent", messagesSent);
-    // Storing a user when they first log in.
-    if (messagesSent == 0) {
-      if (!userFound(username)) {
-        datastore.put(userEntity);
-      }
-    // Updating a user's messagesSent property here.
-    } else {
-      datastore.put(userEntity);
+    Entity storedUserEntity = findUser(username);
+    // Doesn't override previous count by getting previous count first.
+    if (storedUserEntity != null) {
+      updateMessagesSent += (long) storedUserEntity.getProperty("messagesSent");
     }
+    userEntity.setProperty("messagesSent", updateMessagesSent);
+    datastore.put(userEntity);
   }
 
   /**
@@ -111,24 +108,11 @@ public class Datastore {
   public String getMostActiveUser() {
     Query query = new Query("User").addSort("messagesSent", SortDirection.DESCENDING);
     PreparedQuery results = datastore.prepare(query);
-    Entity userEntity = results.asSingleEntity();
+    Entity userEntity = results.asIterator().next();
     if (userEntity == null) {
       return "No users in the system";
     }
     return userEntity.getKey().getName();
-  }
-
-  /**
-   * Gets number of messages a user has sent.
-   * 
-   * @return number of messages sent by user, with a cap of 10000. Can be 0.
-   */
-  public int getNumMessagesUserSent(String sender) {
-    Query query =
-      new Query("Message")
-            .setFilter(new Query.FilterPredicate("user", FilterOperator.EQUAL, sender));
-    PreparedQuery results = datastore.prepare(query);
-    return results.countEntities(FetchOptions.Builder.withLimit(fetchLimit));
   }
 
   /** 
@@ -156,11 +140,24 @@ public class Datastore {
     PreparedQuery results = datastore.prepare(query);
     return results.countEntities(FetchOptions.Builder.withLimit(fetchLimit));
   }
+  
+  /**
+   * Gets all the messages that exist in the datastore,
+   * regardless of sender or recipient.
+   *  
+   * @return a list of messages that exists in the datastore/app, or empty list if
+   * there are no messages in the datastore/app. List is sorted by time descending.
+   */
+  public List<Message> getAllMessages() {
+	  // call the getMessagesForRecipient method,
+	  // but setting the recipient to null
+	  return getMessagesForRecipient(null);
+  }
 
   /**
    * Gets the message sent by the user.
    * 
-   * @return a lit of message send by the sender, or empty list if the sender hasn't 
+   * @return a list of message send by the sender, or empty list if the sender hasn't 
    * 	sent a message. List is sorted by time descending.
    */
   public List<Message> getMessagesBySender(String sender) {
@@ -203,11 +200,19 @@ public class Datastore {
    */
   public List<Message> getMessagesForRecipient(String recipient) {
     List<Message> messages = new ArrayList<>();
+    
+    Query query;
+    if (recipient != null) {
+    	// recipient was specified
+        query = new Query("Message")
+                    .setFilter(new Query.FilterPredicate("recipient", FilterOperator.EQUAL, recipient))
+                    .addSort("timestamp", SortDirection.DESCENDING);
+    } else {
+    	// recipient was not specified, return all messages in datastore
+    	query = new Query("Message")
+    				.addSort("timestamp", SortDirection.DESCENDING);
+    }
 
-    Query query =
-        new Query("Message")
-            .setFilter(new Query.FilterPredicate("recipient", FilterOperator.EQUAL, recipient))
-            .addSort("timestamp", SortDirection.DESCENDING);
     PreparedQuery results = datastore.prepare(query);
 
     for (Entity entity : results.asIterable()) {

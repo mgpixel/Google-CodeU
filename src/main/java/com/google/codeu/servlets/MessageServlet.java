@@ -89,8 +89,7 @@ public class MessageServlet extends HttpServlet {
       recipient = username;
     }
     // update the user's message count that sent the original message
-    int messagesSent = datastore.getNumMessagesUserSent(username);
-    datastore.storeUser(username, messagesSent+1);
+    datastore.storeUser(username, 1);
 
     Message message = new Message(username, text, recipient);
 
