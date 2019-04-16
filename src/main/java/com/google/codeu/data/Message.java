@@ -31,6 +31,7 @@ public class Message {
   private String text;
   private long timestamp;
   private String recipient;
+  private String imageUrl;
 
   /**
    * Constructs a new {@link Message} posted by {@code user} with {@code text} content 
@@ -53,6 +54,10 @@ public class Message {
     return id;
   }
 
+  public String getImageUrl() {
+    return imageUrl;
+  }
+
   public String getUser() {
     return user;
   }
@@ -67,6 +72,10 @@ public class Message {
   
   public String getRecipient() {
     return recipient;
+  }
+
+  public void setImageUrl(String imageUrl) {
+    this.imageUrl = imageUrl;
   }
 
   /**
@@ -85,7 +94,6 @@ public class Message {
     // Continously changes the text if valid url(s) was/were passed in.
     while (m.find()) {
       match = m.group();
-      System.out.println(match);
       if (urlValidator.isValid(match)) {
         match = match.replaceAll(regex, replacement);
       }
