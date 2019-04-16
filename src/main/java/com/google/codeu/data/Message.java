@@ -48,7 +48,6 @@ public class Message {
     this.text = text;
     this.timestamp = timestamp;
     this.recipient = recipient;
-    this.imageUrl = null;
   }
 
   public UUID getId() {

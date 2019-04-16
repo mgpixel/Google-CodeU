@@ -38,8 +38,8 @@ public class Datastore {
     datastore = DatastoreServiceFactory.getDatastoreService();
   }
 
-  /** 
-   *  Checks if a user was already stored, done when a user logs in.
+  /**
+   * Checks if a user was already stored, done when a user logs in.
    * 
    *  @return a user entity if found, null otherwise.
    */
@@ -64,8 +64,8 @@ public class Datastore {
   }
 
   /**
-   * Either stores the user in datastore, or updates the messagesSent
-   * property when a message is being stored.
+   * Either stores the user in datastore, or updates the messagesSent property
+   * when a message is being stored.
    */
   public void storeUser(String username, int updateMessagesSent) {
     Entity userEntity = new Entity("User", username);
@@ -92,7 +92,7 @@ public class Datastore {
     if (numMessages == 0) {
       return 0;
     }
-    for (Entity messageEntity: results.asIterable()) {
+    for (Entity messageEntity : results.asIterable()) {
       String text = (String) messageEntity.getProperty("text");
       averageLength += (double) text.length() / numMessages;
     }
@@ -102,8 +102,8 @@ public class Datastore {
   /**
    * Gets most active user based on number of messages sent.
    * 
-   * @return most active user, first user if no messages sent in system/ties or
-   *  a message saying there are no users.
+   * @return most active user, first user if no messages sent in system/ties or a
+   *         message saying there are no users.
    */
   public String getMostActiveUser() {
     Query query = new Query("User").addSort("messagesSent", SortDirection.DESCENDING);
@@ -115,15 +115,26 @@ public class Datastore {
     return userEntity.getKey().getName();
   }
 
-  /** 
+  /**
+   * Gets number of messages a user has sent.
+   * 
+   * @return number of messages sent by user, with a cap of 10000. Can be 0.
+   */
+  public int getNumMessagesUserSent(String sender) {
+    Query query = new Query("Message").setFilter(new Query.FilterPredicate("user", FilterOperator.EQUAL, sender));
+    PreparedQuery results = datastore.prepare(query);
+    return results.countEntities(FetchOptions.Builder.withLimit(fetchLimit));
+  }
+
+  /**
    * Gets total number of messages in system. Note: since countEntities() is
-   * deprecated, setting an arbitrary limit to every getter using it. May
-   * cause an issue with getAverageMessageLength if there are more messages
-   * than the limit specified, keep in mind.
+   * deprecated, setting an arbitrary limit to every getter using it. May cause an
+   * issue with getAverageMessageLength if there are more messages than the limit
+   * specified, keep in mind.
    * 
    * @return number of messages, with a cap of 10000 if length is bigger.
    */
-  public int getTotalMessageCount(){
+  public int getTotalMessageCount() {
     Query query = new Query("Message");
     PreparedQuery results = datastore.prepare(query);
     return results.countEntities(FetchOptions.Builder.withLimit(fetchLimit));
@@ -133,9 +144,9 @@ public class Datastore {
    * Gets total number of users in system.
    * 
    * @return number of users in system, with a cap of 1000 if length is bigger.
-   *  Can be 0 if there no one has logged in.
+   *         Can be 0 if there no one has logged in.
    */
-  public int getTotalUserCount(){
+  public int getTotalUserCount() {
     Query query = new Query("User");
     PreparedQuery results = datastore.prepare(query);
     return results.countEntities(FetchOptions.Builder.withLimit(fetchLimit));
@@ -161,42 +172,40 @@ public class Datastore {
    * 	sent a message. List is sorted by time descending.
    */
   public List<Message> getMessagesBySender(String sender) {
-	  List<Message> messages = new ArrayList<>();
-	  
-	  Query query =
-		  new Query("Message")
-	          .setFilter(new Query.FilterPredicate("user", FilterOperator.EQUAL, sender))
-	          .addSort("timestamp", SortDirection.DESCENDING);
-	  PreparedQuery results = datastore.prepare(query);
+    List<Message> messages = new ArrayList<>();
 
-	  for (Entity entity : results.asIterable()) {
-		  try {
-			  // get the fields for each message
-			  // (id, user who received, time stamp, text of message)
-			  String idString = entity.getKey().getName();
-	          UUID id = UUID.fromString(idString);
-	          String recipient = (String) entity.getProperty("recipient"); 
-	          String text = (String) entity.getProperty("text");
-	          long timestamp = (long) entity.getProperty("timestamp");
+    Query query = new Query("Message").setFilter(new Query.FilterPredicate("user", FilterOperator.EQUAL, sender))
+        .addSort("timestamp", SortDirection.DESCENDING);
+    PreparedQuery results = datastore.prepare(query);
 
-            Message message = new Message(id, sender, text, timestamp, recipient);
-            // if there's no url, it'll still be set to null
-            message.setImageUrl((String) entity.getProperty("imageUrl"));
-	          messages.add(message);
-	       } catch (Exception e) {
-	         System.err.println("Error reading message.");
-	         System.err.println(entity.toString());
-	         e.printStackTrace();
-	       }
-	   }
-	   return messages;
+    for (Entity entity : results.asIterable()) {
+      try {
+        // get the fields for each message
+        // (id, user who received, time stamp, text of message)
+        String idString = entity.getKey().getName();
+        UUID id = UUID.fromString(idString);
+        String recipient = (String) entity.getProperty("recipient");
+        String text = (String) entity.getProperty("text");
+        long timestamp = (long) entity.getProperty("timestamp");
+
+        Message message = new Message(id, sender, text, timestamp, recipient);
+        // if there's no url, it'll still be set to null
+        message.setImageUrl((String) entity.getProperty("imageUrl"));
+        messages.add(message);
+      } catch (Exception e) {
+        System.err.println("Error reading message.");
+        System.err.println(entity.toString());
+        e.printStackTrace();
+      }
+    }
+    return messages;
   }
-  
+
   /**
-   * Gets messages received by the user. 
+   * Gets messages received by the user.
    *
-   * @return a list of messages received by the recipient, or empty list if the recipient
-   * 	hasn't received message. List is sorted by time descending. 
+   * @return a list of messages received by the recipient, or empty list if the
+   *         recipient hasn't received message. List is sorted by time descending.
    */
   public List<Message> getMessagesForRecipient(String recipient) {
     List<Message> messages = new ArrayList<>();
@@ -217,11 +226,11 @@ public class Datastore {
 
     for (Entity entity : results.asIterable()) {
       try {
-    	// get the fields for each message
-    	// (id, user who sent message, time stamp, text of message)
+        // get the fields for each message
+        // (id, user who sent message, time stamp, text of message)
         String idString = entity.getKey().getName();
         UUID id = UUID.fromString(idString);
-        String sender = (String) entity.getProperty("user"); 
+        String sender = (String) entity.getProperty("user");
         String text = (String) entity.getProperty("text");
         long timestamp = (long) entity.getProperty("timestamp");
 
