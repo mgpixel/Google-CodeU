@@ -21,16 +21,16 @@ public class MapsInfoServlet extends HttpServlet {
     public void init() {
         ufoSightingArray = new JsonArray();
         Gson gson = new Gson();
-        Scanner scanner = new Scanner(getServletContext().getResourceAsStream("/WEB-INF/UFOs_coord.csv"));
+        Scanner scanner = new Scanner(getServletContext().getResourceAsStream("/WEB-INF/Hikes_Location.csv"));
         while(scanner.hasNextLine()) {
             String line = scanner.nextLine();
             String[] cells = line.split(",");
 
-            String state = cells[0];
-            double lat = Double.parseDouble(cells[1]);
-            double lng = Double.parseDouble(cells[2]);
+            //String state = cells[0];
+            double lat = Double.parseDouble(cells[0]);
+            double lng = Double.parseDouble(cells[1]);
 
-            ufoSightingArray.add(gson.toJsonTree(new UfoSighting(state, lat, lng)));
+            ufoSightingArray.add(gson.toJsonTree(new UfoSighting("", lat, lng)));
         }
         scanner.close();
     }
