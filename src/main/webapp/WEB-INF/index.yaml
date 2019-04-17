@@ -13,6 +13,7 @@
 # limitations under the License.
 
 indexes:
+
 - kind: Message
   properties:
   - name: user
@@ -27,7 +28,6 @@ indexes:
   - name: city
   - name: start
   - name: end
-    direction: desc
 
 - kind: Hike
   properties:
@@ -35,4 +35,3 @@ indexes:
   - name: organizer
   - name: time
   - name: date
-    direction: desc

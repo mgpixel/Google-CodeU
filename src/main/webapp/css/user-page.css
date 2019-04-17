@@ -14,6 +14,71 @@
  * limitations under the License.
  */
 
+ body#userpage-body {
+   background-color: #81d4fa;
+   background-image: none;
+ }
+
+ .content {
+   margin-left: auto;
+   margin-right: auto;
+   width: 100%;
+ }
+
+ /** User profile info styling */
+ #user-info {
+   text-align: center;
+   word-wrap: break-word;
+ }
+
+ #user-info h4 {
+   font-weight: bold;
+ }
+
+ .avatar {
+  vertical-align: middle;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 30px;
+  width: 100px;
+  height: 100px;
+  border-radius: 30px;
+}
+
+/* User Page Sections */
+#liked-hikes {
+  background-color: #06303c;
+}
+
+#liked-hikes h5 {
+  color: white;
+}
+
+#user-stats {
+  background-color: #06303c;
+}
+
+#user-stats h5 {
+  color: white;
+}
+
+#planned-hikes {
+  background-color: #06303c;
+}
+
+#planned-hikes h5 {
+  color: white;
+}
+
+#created-hikes {
+  background-color: #06303c;
+}
+
+#created-hikes h5 {
+  color: white;
+}
+
 /* Set the size of the message input to be 100 pixels high
    and will fill the width of its parent element. */
 #message-input {
