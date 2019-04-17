@@ -24,6 +24,7 @@ body {
 /* Nav bar formatting */
 #navigation li a {
   font-size: 18px;
+  color: #06303c;
 }
 
 /* Home page title formatting */
