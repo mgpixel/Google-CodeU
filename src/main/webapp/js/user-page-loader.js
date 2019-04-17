@@ -39,12 +39,30 @@ function showMessageFormIfLoggedIn() {
       })
       .then((loginStatus) => {
         if (loginStatus.isLoggedIn) {
+          if (loginStatus.username == parameterUsername) {
+            fetchImageUploadUrlAndShowForm();
+          }
           const messageForm = document.getElementById('message-form');
           // changes the action attribute of the form (ie. the url)
-          messageForm.action = '/messages?recipient=' + parameterUsername;
           messageForm.classList.remove('hidden');
+          document.getElementById('recipientInput').value = parameterUsername;
         }
       });
+}
+
+/**
+ * Fetch the images stored for a user if the user is viewing themselves.
+ */
+function fetchImageUploadUrlAndShowForm() {
+  fetch('/image-upload-url')
+      .then((response) => {
+        return response.text();
+      })
+      .then((imageUploadUrl) => {
+        const messageForm = document.getElementById('message-form');
+        messageForm.classList.remove('hidden');
+        messageForm.action = imageUploadUrl;
+      })
 }
 
 /** Fetches messages and add them to the page. */
@@ -82,6 +100,9 @@ function buildMessageDiv(message) {
   const bodyDiv = document.createElement('div');
   bodyDiv.classList.add('message-body');
   bodyDiv.innerHTML = message.text;
+  if (message.imageUrl) {
+    bodyDiv.innerHTML += '<br/> <imgsrc="' + message.imageUrl + '" />';
+  }
 
   const messageDiv = document.createElement('div');
   messageDiv.classList.add('message-div');

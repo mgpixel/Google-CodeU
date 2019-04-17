@@ -1,5 +1,7 @@
 /target/
 
+.factorypath
+.vscode
 #Eclipse
 .classpath
 .project
