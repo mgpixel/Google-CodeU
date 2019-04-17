@@ -27,18 +27,41 @@ limitations under the License.
   </head>
   <body id="userpage-body" onload="buildUI();">
     <nav>
-      <div class="nav-wrapper light-blue lighten-3">
+      <div class="nav-wrapper white">
         <ul id="navigation" class="right hide-on-med-and-down">
           <li><a href="/">Home</a></li>
         </ul>
       </div>
     </nav>
 
-    <div id="user-info">
-      <h1 id="page-title">User Page</h1>
+    <div class="content">
+    <div class="row">
+
+      <div class="col s4">
+        <div id="user-info">
+          <img src="avatar.png" alt="Avatar" class="avatar">
+          <h4 id="page-title">User Page</h4>
+        </div>
+        <div id="liked-hikes">
+          <h5 id="section-title">Favorited Hikes</h5>
+        </div>
+      </div>
+
+      <div class="col s8">
+        <div id="created-hikes">
+          <h5 id="section-title">Created Hikes</h5>
+        </div>
+        <div id="planned-hikes">
+          <h5 id="section-title">Hikes Planned</h5>
+        </div>
+        <div id="user-stats">
+          <h5 id="section-title">Statistics</h5>
+        </div>
+      </div>
+    </div>
     </div>
 
-    <form id="message-form" action="/messages" method="POST" class="hidden">
+    <!-- <form id="message-form" action="/messages" method="POST" class="hidden">
       Enter a new message:
       <br/>
       <textarea name="text" id="message-input"></textarea>
@@ -47,6 +70,6 @@ limitations under the License.
     </form>
     <hr/>
 
-    <div id="message-container">Loading...</div>
+    <div id="message-container">Loading...</div> -->
   </body>
 </html>
