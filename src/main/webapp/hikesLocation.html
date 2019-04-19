@@ -1,15 +1,53 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Hikes Location</title>
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDtbhKCly9d47_bs3oQOkodmX3G4B6FhoI"></script>
-        <link rel="stylesheet" href="/css/maps-style.css">
-        <script src="/js/trailHiking-rendering.js"></script>
-    </head>
-    <body onload="createUfoSightingsMap();">
-    <nav>
-        <h1 id="tittleMap">Trails Map</h1>
-    </nav>
-    <div id="map"></div>
-    </body>
+<head>
+    <title>Explore Hikes</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/hikes-location.css">
+    <link href="https://fonts.googleapis.com/css?family=Barlow" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDtbhKCly9d47_bs3oQOkodmX3G4B6FhoI"></script>
+    <script src="/js/navigation-loader.js"></script>
+    <script>
+        function createUfoSightingsMap() {
+            fetch('/MapsInfo').then(function(response) {
+                return response.json();
+            }).then((ufoSightings) => {
+
+                const map = new google.maps.Map(document.getElementById('map'), {
+                    center: {lat: 48.012, lng: -120.623},
+                    zoom:10
+                });
+
+            ufoSightings.forEach((ufoSighting) => {
+                new google.maps.Marker({
+                    position: {lat: ufoSighting.lat, lng: ufoSighting.lng},
+                    map: map
+                });
+            });
+          });
+        }
+
+        function hikesLocationLoad() {
+          addLoginOrLogoutLinkToNavigation();
+          createUfoSightingsMap();
+        }
+    </script>
+</head>
+<body id="mappage-body" onload="hikesLocationLoad();">
+  <nav>
+    <div class="nav-wrapper white">
+      <ul id="navigation" class="right hide-on-med-and-down">
+        <li><a href="/">Home</a></li>
+      </ul>
+    </div>
+  </nav>
+  <h3>Trails</h3>
+  <div id="map-content" class="row">
+    <div id="panel" class="col s3">
+      <h3>Search and Explore Trails<h3>
+    </div>
+    <div id="map" class="col s9"></div>
+  </div>
+</body>
 </html>

@@ -1,0 +1,24 @@
+#new-trail {
+  width: 80%;
+  margin: 0 auto;
+  margin-top: 30px;
+}
+
+button#submit-trail {
+  background-color: #06303c;
+  color: white;
+}
+
+body {
+  background-image: none;
+  background-color: #81d4fa;
+}
+
+.input-field {
+  color: #06303c;
+}
+
+.input-field label {
+  color: #06303c !important;
+  font-size: 150% !important;
+}

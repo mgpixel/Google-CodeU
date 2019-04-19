@@ -26,7 +26,7 @@ public class Trail {
 	
 	private UUID id;
 	private String trailName;
-	private String cityName;
+	private String stateName;
 	private LatLng start;
 	private LatLng end;
 	
@@ -34,13 +34,14 @@ public class Trail {
 	 * Constructs a new {@link Trail} with starting lat/lon coordinates {@code start}
 	 * and ending lat/lon coordinates {@code end}. Generates a random ID. 
 	 */
-	public Trail(String trailName, String cityName, LatLng start, LatLng end) {
-		this(UUID.randomUUID(), trailName, cityName, start, end);
+	public Trail(String trailName, String stateName, LatLng start, LatLng end) {
+		this(UUID.randomUUID(), trailName, stateName, start, end);
 	}
 	
-	public Trail(UUID id, String trailName, String cityName, LatLng start, LatLng end) {
+	public Trail(UUID id, String trailName, String stateName, LatLng start, LatLng end) {
 		this.id = id;
 		this.trailName = trailName;
+		this.stateName = stateName;
 		this.start = start;
 		this.end = end;
 	}
@@ -54,8 +55,8 @@ public class Trail {
 		return this.trailName;
 	}
 	
-	public String getCityName() {
-		return this.cityName;
+	public String getStateName() {
+		return this.stateName;
 	}
 	
 	public LatLng getStart() {
