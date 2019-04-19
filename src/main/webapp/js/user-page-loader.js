@@ -112,8 +112,29 @@ function buildMessageDiv(message) {
   return messageDiv;
 }
 
+function showAvatar() {
+  document.getElementById('myAvatar').setAttribute('src', 'background.jpg');
+}
+
+/**
+ * Allows user to click on profile picture to change it.
+ */
+function replaceAvatar() {
+  document.getElementById('updateAvatar').click();
+  // fetch('/image-upload-url')
+  // .then((response) => {
+  //   return response.text();
+  // })
+  // .then((imageUploadUrl) => {
+  //   const messageForm = document.getElementById('message-form');
+  //   messageForm.classList.remove('hidden');
+  //   messageForm.action = imageUploadUrl;
+  // })
+}
+
 /** Fetches data and populates the UI of the page. */
 function buildUI() {
+  showAvatar();
   setPageTitle();
   showMessageFormIfLoggedIn();
   fetchMessages();
