@@ -26,6 +26,8 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.codeu.data.Datastore;
 import com.google.codeu.data.Message;
+import com.google.codeu.data.Trail;
+import com.google.codeu.data.UserMarker;
 import com.google.gson.Gson;
 import java.io.IOException;
 import java.util.List;
@@ -38,7 +40,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
 
 /** Handles fetching and saving {@link Trail} instances. */
-@WebServlet("/trails")
+@WebServlet("/new-trails")
 public class NewTrailServlet extends HttpServlet {
 
   private Datastore datastore;
@@ -50,22 +52,24 @@ public class NewTrailServlet extends HttpServlet {
 
   /**
    * Responds with a JSON representation of {@link Trail} data for a specific trail. Responds with
-   * an empty array if the trail is not provided.
+   * an empty array if the trail is not provided. If there are multiple trails with the same
+   * name, returns all of them.
    */
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
     response.setContentType("application/json");
-    String user = request.getParameter("user");
-
-    if (user == null || user.equals("")) {
-      // Request is invalid, return empty array
-      response.getWriter().println("[]");
-      return;
+    String trail = request.getParameter("trail");
+    
+    if (trail == null || trail.equals("")) {
+    	// request is invalid, return empty array
+    	response.getWriter().println("[]");
+    	return;
     }
-    List<Message> messages = datastore.getMessagesForRecipient(user);
+    
+    List<Trail> trails = datastore.getTrailsByName(trail);
     Gson gson = new Gson();
-    String json = gson.toJson(messages);
+    String json = gson.toJson(trails);
     response.getWriter().println(json);
   }
 
@@ -78,34 +82,18 @@ public class NewTrailServlet extends HttpServlet {
       response.sendRedirect("/index.html");
       return;
     }
+    
+    String trailName = request.getParameter("trailName");
+    String state = request.getParameter("state");
+    String city = request.getParameter("city");
+    double startLat = Double.parseDouble(request.getParameter("startLat"));
+    double startLon = Double.parseDouble(request.getParameter("startLon"));
 
-    // gets the current logged in user's email
-    String username = userService.getCurrentUser().getEmail();
-    // gets the text of the message
-    String text = Jsoup.clean(request.getParameter("text"), Whitelist.none());
-    // gets the recipient of the message
-    String recipient = request.getParameter("recipient");
-    if (recipient == null || recipient.equals("")) {
-      recipient = username;
-    }
-    // update the user's message count that sent the original message
-    datastore.storeUser(username, 1);
-
-    Message message = new Message(username, text, recipient);
-
-    BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
-    Map<String, List<BlobKey>> blobs = blobstoreService.getUploads(request);
-    List<BlobKey> blobKeys = blobs.get("image");
-
-    // sets message imageUrl field to be used to display image if it exists
-    if(blobKeys != null && !blobKeys.isEmpty()) {
-      BlobKey blobKey = blobKeys.get(0);
-      ImagesService imagesService = ImagesServiceFactory.getImagesService();
-      ServingUrlOptions options = ServingUrlOptions.Builder.withBlobKey(blobKey);
-      String imageUrl = imagesService.getServingUrl(options);
-      message.setImageUrl(imageUrl);
-    }
-    datastore.storeMessage(message);
-    response.sendRedirect("/user-page.html?user=" + recipient);
+    Trail trail = new Trail(trailName, state, city, startLat, startLon);
+    datastore.storeTrail(trail);
+    
+    UserMarker marker = new UserMarker(startLat, startLon, trailName);
+    datastore.storeMarker(marker);
+    response.sendRedirect("/hikesLocation.html");
   }
 }

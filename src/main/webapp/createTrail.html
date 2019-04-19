@@ -21,7 +21,7 @@
 
     <h3> Create a New Trail </h3>
     <div class="row" id="new-trail">
-      <form class="col s12">
+      <form id="newtrail-form" class="col s12">
       <div class="row">
         <div class="input-field col s12">
           <input id="trail-name" type="text" class="validate">
@@ -29,9 +29,13 @@
         </div>
       </div>
       <div class="row">
-        <div class="input-field col s12">
+        <div class="input-field col s6">
           <input id="state-name" type="text" class="validate">
           <label class="active" for="state-name">State Location of Trail</label>
+        </div>
+        <div class="input-field col s6">
+          <input id="city-name" type="text" class="validate">
+          <label class="active" for="city-name">City Location of Trail</label>
         </div>
       </div>
       <div class="row">
@@ -44,17 +48,7 @@
           <label class="active" for="lon-start">Longitude Coordinates of Start of Trail</label>
         </div>
       </div>
-      <div class="row">
-        <div class="input-field col s6">
-          <input id="lat-end" type="text" class="validate">
-          <label class="active" for="lat-end">Latitude Coordinates of End of Trail</label>
-        </div>
-        <div class="input-field col s6">
-          <input id="lon-end" type="text" class="validate">
-          <label class="active" for="lon-end">Longitude Coordinates of End of Trail</label>
-        </div>
-      </div>
-      <button id="submit-trail">Add Trail</button>
+      <button onclick="addNewTrail();" id="submit-trail">Add Trail</button>
       </form>
     </div>
 

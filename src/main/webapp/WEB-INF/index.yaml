@@ -25,9 +25,10 @@ indexes:
   properties:
   - name: id
   - name: name
+  - name: state
   - name: city
-  - name: start
-  - name: end
+  - name: startLat
+  - name: startLon
 
 - kind: Hike
   properties:
