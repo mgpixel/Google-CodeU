@@ -26,6 +26,7 @@ public class ProfileServlet extends HttpServlet {
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
+    System.out.println("ok hello");
     UserService userService = UserServiceFactory.getUserService();
     System.out.println("hello");
     if (!userService.isUserLoggedIn()) {

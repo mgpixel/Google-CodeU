@@ -40,6 +40,7 @@ function showMessageFormIfLoggedIn() {
       .then((loginStatus) => {
         if (loginStatus.isLoggedIn) {
           if (loginStatus.username == parameterUsername) {
+            document.getElementById('myAvatar').setAttribute('onclick', 'replaceAvatar()');
             fetchImageUploadUrlAndShowForm();
           }
           const messageForm = document.getElementById('message-form');
@@ -60,8 +61,10 @@ function fetchImageUploadUrlAndShowForm() {
       })
       .then((imageUploadUrl) => {
         const messageForm = document.getElementById('message-form');
-        messageForm.classList.remove('hidden');
-        messageForm.action = imageUploadUrl;
+        if (messageForm) {
+          messageForm.classList.remove('hidden');
+          messageForm.action = imageUploadUrl;
+        }
       })
 }
 
@@ -134,6 +137,7 @@ function replaceAvatar() {
 
 /** Fetches data and populates the UI of the page. */
 function buildUI() {
+  addLoginOrLogoutLinkToNavigation();
   showAvatar();
   setPageTitle();
   showMessageFormIfLoggedIn();

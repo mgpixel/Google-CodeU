@@ -66,3 +66,40 @@ function createLink(url, text) {
   linkElement.href = url;
   return linkElement;
 }
+
+/**
+ * Makes sure that a malicious user can't just put in a hardcoded user url to impersonate
+ * and organize fake hikes in their name.
+ */
+function checkCorrectUser(parameterUsername) {
+  fetch('/login-status')
+    .then((response) => {
+      return response.json();
+    })
+    .then((loginStatus) => {
+      if (!loginStatus.isLoggedIn && loginStatus.username != parameterUsername) {
+        window.location.href = '/';
+      }
+    });
+}
+
+/**
+ * Either redirects to login page or goes to appropriate page. Needed
+ * because of needing to store specific information about the user for
+ * pages this function is called for.
+ * @param {string} url 
+ */
+function changeWindow(url) {
+  fetch('/login-status')
+      .then((response) => {
+        return response.json();
+      })
+      .then((loginStatus) => {
+        if (loginStatus.isLoggedIn) {
+          url = url + '?user=' + loginStatus.username;
+          window.location.href = url;
+        } else {
+          window.location.href = '/login';
+        }
+      });
+}
