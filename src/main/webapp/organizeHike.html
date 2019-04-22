@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>The Hiking Project</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/organize-hike.css">
+    <link href="https://fonts.googleapis.com/css?family=Barlow" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="/js/navigation-loader.js"></script>
+    <script src="/js/organize-hike-loader.js"></script>
+  </head>
+  <body onload="buildOrganizeUI();">
+    <nav>
+      <div class="nav-wrapper white">
+        <ul id="navigation" class="right hide-on-small-only">
+          <li><a href="/">Home</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="content">
+      <div id="pls">
+        <h3>Organize a Hike</h3>
+        <input id="trailInput" type="text" name="myTrail" placeholder="Trail">
+        <input id="numInput" type="text" name="numParticipants" placeholder="Number of participants, Max = 100">
+      </div>
+    </div>
+  </body>
+</html>
