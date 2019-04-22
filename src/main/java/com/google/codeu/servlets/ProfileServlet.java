@@ -8,20 +8,17 @@ import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.ServingUrlOptions;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-import com.google.appengine.repackaged.com.google.gson.Gson;
 import com.google.codeu.data.Datastore;
 import com.google.codeu.data.UserProfile;
+import com.google.gson.Gson;
 
 import java.util.List;
 import java.io.IOException;
 import java.util.Map;
-
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.jsoup.Jsoup;
-import org.jsoup.safety.Whitelist;
 
 /**
  * Redirects the user to the Google login page or their page if they're already logged in.
