@@ -8,6 +8,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Creates upload urls for user page.
+ */
 @WebServlet("/image-upload-url")
 public class ImageUploadUrlServlet extends HttpServlet {
 
@@ -15,6 +18,7 @@ public class ImageUploadUrlServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
     String uploadUrl = blobstoreService.createUploadUrl("/messages");
+    uploadUrl += " " + blobstoreService.createUploadUrl("/profile");
     response.setContentType("text/html");
     response.getOutputStream().println(uploadUrl);
   }

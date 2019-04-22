@@ -46,7 +46,7 @@ public class Datastore {
   private Entity findUser(String username) {
     Query query =
         new Query("User")
-            .setFilter(new Query.FilterPredicate("User", FilterOperator.EQUAL, username));
+            .setFilter(new Query.FilterPredicate("username", FilterOperator.EQUAL, username));
     PreparedQuery results = datastore.prepare(query);
     return results.asSingleEntity();
   }
@@ -69,12 +69,26 @@ public class Datastore {
    */
   public void storeUser(String username, int updateMessagesSent) {
     Entity userEntity = new Entity("User", username);
+    userEntity.setProperty("username", username);
     Entity storedUserEntity = findUser(username);
     // Doesn't override previous count by getting previous count first.
     if (storedUserEntity != null) {
-      updateMessagesSent += (long) storedUserEntity.getProperty("messagesSent");
+      updateMessagesSent += (int) storedUserEntity.getProperty("messagesSent");
+      userEntity = storedUserEntity;
     }
     userEntity.setProperty("messagesSent", updateMessagesSent);
+    datastore.put(userEntity);
+  }
+
+  /**
+   * Called when the user's picture changes. Note: Does not delete previous
+   * picture stored, meaning blobstore will get worse over time :(.
+   * @param username - user email/name.
+   * @param url - picture url from blobstore.
+   */
+  public void updateProfile(String username, String url) {
+    Entity userEntity = findUser(username);
+    userEntity.setProperty("avatarUrl", url);
     datastore.put(userEntity);
   }
 
@@ -269,6 +283,22 @@ public class Datastore {
       }
     }
     return markers;
+  }
+
+  /**
+   * Gets the profile of specified user, filling it in with data from
+   * the datastore.
+   * 
+   *  @param username - email/name of user.
+   *  @return - profile with data about the user.
+   */
+  public UserProfile getUserProfile(String username) {
+    Entity userEntity = findUser(username);
+    String avatarUrl = (String) userEntity.getProperty("avatarUrl");
+    // Error if tried to convert to int rip.
+    long messagesSent = (long) userEntity.getProperty("messagesSent");
+    UserProfile userProfile = new UserProfile(username, avatarUrl, messagesSent);
+    return userProfile;
   }
 
   public void storeMarker(UserMarker marker) {

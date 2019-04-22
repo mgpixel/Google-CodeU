@@ -39,9 +39,11 @@ function showMessageFormIfLoggedIn() {
       })
       .then((loginStatus) => {
         if (loginStatus.isLoggedIn) {
+          fetchImageUploadUrlAndShowForm();
           if (loginStatus.username == parameterUsername) {
-            document.getElementById('myAvatar').setAttribute('onclick', 'replaceAvatar()');
-            fetchImageUploadUrlAndShowForm();
+            var myAvatarElement = document.getElementById('myAvatar');
+            myAvatarElement.setAttribute('onclick', 'replaceAvatar()');
+            myAvatarElement.style.cursor = 'pointer';
           }
           const messageForm = document.getElementById('message-form');
           // changes the action attribute of the form (ie. the url)
@@ -60,11 +62,12 @@ function fetchImageUploadUrlAndShowForm() {
         return response.text();
       })
       .then((imageUploadUrl) => {
+        // Multiple upload urls, split by space.
+        var urls = imageUploadUrl.split(/(\s+)/);
         const messageForm = document.getElementById('message-form');
-        if (messageForm) {
-          messageForm.classList.remove('hidden');
-          messageForm.action = imageUploadUrl;
-        }
+        const avatarForm = document.getElementById('submit-picture');
+        messageForm.action = urls[0];
+        avatarForm.action = urls[2];
       })
 }
 
@@ -104,7 +107,7 @@ function buildMessageDiv(message) {
   bodyDiv.classList.add('message-body');
   bodyDiv.innerHTML = message.text;
   if (message.imageUrl) {
-    bodyDiv.innerHTML += '<br/> <imgsrc="' + message.imageUrl + '" />';
+    bodyDiv.innerHTML += '<br/> <img src="' + message.imageUrl + '" />';
   }
 
   const messageDiv = document.createElement('div');
@@ -115,31 +118,41 @@ function buildMessageDiv(message) {
   return messageDiv;
 }
 
-function showAvatar() {
-  document.getElementById('myAvatar').setAttribute('src', 'background.jpg');
+function fetchProfile() {
+  const url = '/profile?user=' + parameterUsername;
+  fetch(url)
+      .then((response) => {
+        return response.json();
+      })
+      .then((profile) => {
+        if (profile && profile.avatarUrl) {
+          document.getElementById('myAvatar').setAttribute('src', profile.avatarUrl);
+        }
+      });
 }
 
 /**
  * Allows user to click on profile picture to change it.
  */
 function replaceAvatar() {
-  document.getElementById('updateAvatar').click();
-  // fetch('/image-upload-url')
-  // .then((response) => {
-  //   return response.text();
-  // })
-  // .then((imageUploadUrl) => {
-  //   const messageForm = document.getElementById('message-form');
-  //   messageForm.classList.remove('hidden');
-  //   messageForm.action = imageUploadUrl;
-  // })
+  var avatarElement = document.getElementById('updateAvatar');
+  avatarElement.click();
 }
 
 /** Fetches data and populates the UI of the page. */
 function buildUI() {
   addLoginOrLogoutLinkToNavigation();
-  showAvatar();
+  fetchProfile();
   setPageTitle();
   showMessageFormIfLoggedIn();
   fetchMessages();
+  var avatarElement = document.getElementById('updateAvatar');
+  avatarElement.onchange = function() {
+    if (this.value == "") {
+      // Shouldn't ever happen but just in case
+    } else {
+      var submitElement = document.getElementById('submit-picture');
+      submitElement.submit();
+    }
+  };
 }

@@ -39,8 +39,8 @@ limitations under the License.
       <div class="user-profile">
         <div id="user-info">
           <img src="avatar.png" id="myAvatar" alt="Avatar" class="avatar">
-          <form id="upload-avatar" action="/profile" method="POST">
-            <input type="file" accept="image/*" id="updateAvatar" style="display: none;">
+          <form id="submit-picture" action="/profile" enctype="multipart/form-data" method="POST">
+            <input type="file" name="avatarUrl" accept="image/*" id="updateAvatar" style="display: none;">
           </form>
           <h4 id="page-title">User Page</h4>
         </div>
@@ -58,8 +58,8 @@ limitations under the License.
         </div>
       </div>
     </div>
-
-    <!-- <form id="message-form" action="/messages" method="POST" class="hidden">
+    <br/>
+    <form id="message-form" enctype="multipart/form-data" action="/messages" method="POST" class="hidden">
       Enter a new message:
       <br/>
       <textarea name="text" id="message-input"></textarea>
@@ -72,6 +72,6 @@ limitations under the License.
     </form>
     <hr/>
 
-    <div id="message-container">Loading...</div> -->
+    <div id="message-container">Loading...</div>
   </body>
 </html>

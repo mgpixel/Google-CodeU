@@ -1,13 +1,27 @@
 package com.google.codeu.servlets;
 
+import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.blobstore.BlobstoreService;
+import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
+import com.google.appengine.api.images.ImagesService;
+import com.google.appengine.api.images.ImagesServiceFactory;
+import com.google.appengine.api.images.ServingUrlOptions;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.appengine.repackaged.com.google.gson.Gson;
 import com.google.codeu.data.Datastore;
+import com.google.codeu.data.UserProfile;
+
+import java.util.List;
 import java.io.IOException;
+import java.util.Map;
+
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
 
 /**
  * Redirects the user to the Google login page or their page if they're already logged in.
@@ -22,20 +36,46 @@ public class ProfileServlet extends HttpServlet {
     datastore = new Datastore();
   }
 
+  @Override
+  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    response.setContentType("application/json");
+    String user = request.getParameter("user");
+
+    if (user == null || user.equals("")) {
+      // Request is invalid, return empty array
+      response.getWriter().println("[]");
+      return;
+    }
+    UserProfile storedProfile = datastore.getUserProfile(user);
+    Gson gson = new Gson();
+    String json = gson.toJson(storedProfile);
+    response.getWriter().println(json);
+  }
+
   /** Stores a new image to show in profile. */
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-    System.out.println("ok hello");
     UserService userService = UserServiceFactory.getUserService();
-    System.out.println("hello");
     if (!userService.isUserLoggedIn()) {
       response.sendRedirect("/index.html");
       return;
     }
 
-    // gets the current logged in user's email
     String username = userService.getCurrentUser().getEmail();
+    // Store the new picture and reload the page.
+    BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
+    Map<String, List<BlobKey>> blobs = blobstoreService.getUploads(request);
+    List<BlobKey> blobKeys = blobs.get("avatarUrl");
+    if(blobKeys != null && !blobKeys.isEmpty()) {
+      BlobKey blobKey = blobKeys.get(0);
+      ImagesService imagesService = ImagesServiceFactory.getImagesService();
+      ServingUrlOptions options = ServingUrlOptions.Builder.withBlobKey(blobKey);
+      String imageUrl = imagesService.getServingUrl(options);
+      datastore.updateProfile(username, imageUrl);
+    }
+    // No cache since profile picture was updated.
+    response.setHeader("Cache-Control", "no-store");
     response.sendRedirect("/user-page.html?user=" + username);
   }
 }

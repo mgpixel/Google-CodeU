@@ -74,6 +74,10 @@
   color: #06303c;
 }
 
+#message-form {
+  font-size: 14pt;
+}
+
 /* Set the size of the message input to be 100 pixels high
    and will fill the width of its parent element. */
 #message-input {
@@ -86,6 +90,7 @@
   border: thin solid black;
   border-radius: 5px;
   margin-top: 20px;
+  font-size: 14pt;
 }
 
 /* Add a bottom border to the message header. */
