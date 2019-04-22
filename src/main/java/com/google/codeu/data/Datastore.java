@@ -67,13 +67,13 @@ public class Datastore {
    * Either stores the user in datastore, or updates the messagesSent property
    * when a message is being stored.
    */
-  public void storeUser(String username, int updateMessagesSent) {
+  public void storeUser(String username, long updateMessagesSent) {
     Entity userEntity = new Entity("User", username);
     userEntity.setProperty("username", username);
     Entity storedUserEntity = findUser(username);
     // Doesn't override previous count by getting previous count first.
     if (storedUserEntity != null) {
-      updateMessagesSent += (int) storedUserEntity.getProperty("messagesSent");
+      updateMessagesSent += (long) storedUserEntity.getProperty("messagesSent");
       userEntity = storedUserEntity;
     }
     userEntity.setProperty("messagesSent", updateMessagesSent);

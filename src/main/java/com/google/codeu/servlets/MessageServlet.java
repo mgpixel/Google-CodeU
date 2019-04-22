@@ -21,7 +21,9 @@ import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ImagesServiceFactory;
+import com.google.appengine.api.images.ImagesServiceFailureException;
 import com.google.appengine.api.images.ServingUrlOptions;
+import com.google.appengine.api.images.ImagesServicePb.ImagesServiceError;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.codeu.data.Datastore;
@@ -102,8 +104,13 @@ public class MessageServlet extends HttpServlet {
       BlobKey blobKey = blobKeys.get(0);
       ImagesService imagesService = ImagesServiceFactory.getImagesService();
       ServingUrlOptions options = ServingUrlOptions.Builder.withBlobKey(blobKey);
-      String imageUrl = imagesService.getServingUrl(options);
-      message.setImageUrl(imageUrl);
+      try {
+        String imageUrl = imagesService.getServingUrl(options);
+        message.setImageUrl(imageUrl);
+      } catch (ImagesServiceFailureException e) {
+        // An exception shouldn't be thrown since if there's no image it
+        // shouldn't reach here but it somehow is, strange times.
+      }
     }
     datastore.storeMessage(message);
     response.sendRedirect("/user-page.html?user=" + recipient);
