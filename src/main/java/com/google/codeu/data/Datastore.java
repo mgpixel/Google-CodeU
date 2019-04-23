@@ -24,6 +24,8 @@ import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.FilterOperator;
 import com.google.appengine.api.datastore.Query.SortDirection;
+import com.google.cloud.datastore.LatLng;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -49,6 +51,52 @@ public class Datastore {
             .setFilter(new Query.FilterPredicate("username", FilterOperator.EQUAL, username));
     PreparedQuery results = datastore.prepare(query);
     return results.asSingleEntity();
+  }
+  
+  /**
+   * Gets the Trails that are associated with a specific trail name. If there are multiple
+   * trails of the same name, returns all of them. 
+   */
+  public List<Trail> getTrailsByName(String trailName) {
+	  List<Trail> trails = new ArrayList<>();
+	  
+	  Query query = new Query("Trail")
+			  .setFilter(new Query.FilterPredicate("name", FilterOperator.EQUAL, trailName));
+	  PreparedQuery results = datastore.prepare(query);
+	  
+	  for (Entity entity : results.asIterable()) {
+		  try {
+			  // get the fields for each trail
+			  // (id, name of trail, state/city where trail is located, start, end coord)
+			  String idString = entity.getKey().getName();
+			  UUID id = UUID.fromString(idString);
+			  String name = (String) entity.getProperty("name");
+			  String state = (String) entity.getProperty("state");
+			  String city = (String) entity.getProperty("city");
+			  double startLat = (double) entity.getProperty("startLat");
+			  double startLon = (double) entity.getProperty("startLon");
+			  
+			  Trail trail = new Trail(id, name, state, city, startLat, startLon);
+			  trails.add(trail);
+		  } catch (Exception e) {
+		      System.err.println("Error reading message.");
+		      System.err.println(entity.toString());
+		      e.printStackTrace();
+		  }
+	  }
+	  
+	  return trails;
+  }
+  
+  /** Stores a Trail in Datastore. */
+  public void storeTrail(Trail trail) {
+	  Entity trailEntity = new Entity("Trail", trail.getId().toString());
+	  trailEntity.setProperty("name", trail.getTrailName());
+	  trailEntity.setProperty("state", trail.getStateName());
+	  trailEntity.setProperty("startLat", trail.getStartLat());
+	  trailEntity.setProperty("startLon", trail.getStartLon());
+	  trailEntity.setProperty("city", trail.getCityName());
+	  datastore.put(trailEntity);
   }
 
   /** Stores the Message in Datastore. */
